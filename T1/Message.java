@@ -1,13 +1,14 @@
 import java.io.*;
 
 class Message {
-	private boolean isAck;
 	private String data;
 	private String clock;
+	private int quantAcks;
 
-	public Message(BufferedReader inFromClient) throws Exception{
+	public Message(BufferedReader inFromClient, int quant) throws Exception{
 		clock = inFromClient.readLine();
 		data = inFromClient.readLine();
+		quantAcks = quant;
 	}
 	
 	public int getGlobalClock(){
