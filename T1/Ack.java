@@ -4,16 +4,16 @@ class Ack {
 	private String clockMsg;
 	private String clockAck;
 
-	public Ack(BufferedReader inFromClient){
+	public Ack(BufferedReader inFromClient) throws Exception{
 		clockAck = inFromClient.readLine();
 		clockMsg = inFromClient.readLine();
 	}
 
 	public int getMsgClock(){
-		return parseInt(clockMsg);
+		return Integer.parseInt(clockMsg);
 	}
 	
 	public int getAckClock(){
-		return parseInt(clockAck);
+		return Integer.parseInt(clockAck);
 	}
 }
