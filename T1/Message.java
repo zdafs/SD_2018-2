@@ -22,4 +22,16 @@ class Message {
 	public String getData(){
 		return data;
 	}
+
+	public void receivedAck(){
+		quantAcks--;
+	}
+
+	public void setQuantAcks(int quant){
+		quantAcks = quantAcks - quant;
+	}
+
+	public int getQuantAcks(){
+		return quantAcks;
+	}
 }
