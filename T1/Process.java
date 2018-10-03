@@ -131,17 +131,17 @@ class Process implements Runnable{
 		while(msgList.size()>0 && msgList.peekFirst().getQuantAcks()==0){
 			m = msgList.remove();
 			System.out.println("A mensagem \""+m.getData()+"\", com tempo "+m.getGlobalClock()+", recebeu "+quant+" ACKs");
-            //StringBuilder sndMessage = new StringBuilder();
-            //sndMessage.append(Integer.toString(pid)+'\n'+m.getData());
-            /*try{
-                Socket clientSocket = new Socket("192.168.0.13", 5000);
+            StringBuilder sndMessage = new StringBuilder();
+            sndMessage.append(Integer.toString(pid)+'\n'+m.getData());
+            try{
+                Socket clientSocket = new Socket("200.18.101.42", 5000);
                 DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
                 outToServer.writeBytes(sndMessage.toString());
                 clientSocket.close();
             }
             catch(Exception e){
                 e.printStackTrace();
-            }*/
+            }
 		}
 	}
 }
