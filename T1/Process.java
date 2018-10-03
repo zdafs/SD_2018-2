@@ -7,7 +7,7 @@ class Process implements Runnable{
 	static private int pid;
 	static private int quant;
 	static private int basePort;
-	static private Socket clientSocket;
+	//static private Socket clientSocket;
 	private Socket connectionSocket;
 	static private LinkedList<Message> msgList;
 	static private Hashtable<Integer, Integer> freeAcks;
@@ -35,8 +35,9 @@ class Process implements Runnable{
 					StringBuilder message = new StringBuilder();
 					String data = reader.readLine();
 					message.append("0"+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data+'\n');
+                    Socket clientSocket;
 					for(int i=0; i<quant; i++){
-						clientSocket = new Socket("192.168.0.12", basePort+i);
+                        clientSocket = new Socket("200.18.101.42", basePort+i);
 						DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 						outToServer.writeBytes(message.toString());
 						clientSocket.close();
@@ -74,38 +75,16 @@ class Process implements Runnable{
 
 			if(inFromClient.readLine().equals("1")){
 				Ack ack = new Ack(inFromClient);
-				clock = Math.max(ack.getAckClock(), clock) + 1;
-				int i=0;
-				while(i<msgList.size() && msgList.get(i).getGlobalClock()<ack.getMsgClock())
-					i++;
-				if(i<msgList.size() && msgList.get(i).getGlobalClock()==ack.getMsgClock()){
-					msgList.get(i).receivedAck();
-					checkQueue();
-				}
-				else{
-					if(freeAcks.isEmpty() || !freeAcks.containsKey(ack.getMsgClock())){
-						freeAcks.put(ack.getMsgClock(), 1);
-					}
-					else{
-						freeAcks.put(ack.getMsgClock(), freeAcks.get(ack.getMsgClock())+1);
-					}
-				}
+				trecho1(ack);
 			}
 			else{
 				Message rcvMsg = new Message(inFromClient, quant);
-				clock = Math.max(rcvMsg.getClock(), clock) + 1;
-				int i=0;
-				while(i<msgList.size() && msgList.get(i).getGlobalClock()<rcvMsg.getGlobalClock())
-					i++;
-				msgList.add(i, rcvMsg);
-				if(!freeAcks.isEmpty() && freeAcks.containsKey(rcvMsg.getGlobalClock())){
-					rcvMsg.setQuantAcks(freeAcks.get(rcvMsg.getGlobalClock()));
-					freeAcks.remove(rcvMsg.getGlobalClock());
-				}
+				trecho2(rcvMsg);
 				StringBuilder sndMessage = new StringBuilder();
 				sndMessage.append("1"+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getGlobalClock()));
-				for(i=0; i<quant; i++){
-					clientSocket = new Socket("192.168.0.12", basePort+i);
+                Socket clientSocket;
+				for(int i=0; i<quant; i++){
+					clientSocket = new Socket("200.18.101.42", basePort+i);
 					DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 					outToServer.writeBytes(sndMessage.toString());
 					clientSocket.close();
@@ -118,11 +97,51 @@ class Process implements Runnable{
 		}
 	}
 
-	public void checkQueue(){
+    public static synchronized void trecho1(Ack ack){
+        clock = Math.max(ack.getAckClock(), clock) + 1;
+        int i=0;
+        while(i<msgList.size() && msgList.get(i).getGlobalClock()<ack.getMsgClock()) i++;
+        if(i<msgList.size() && msgList.get(i).getGlobalClock()==ack.getMsgClock()){
+            msgList.get(i).receivedAck();
+            checkQueue();
+        }
+        else{
+            if(freeAcks.isEmpty() || !freeAcks.containsKey(ack.getMsgClock())){
+                freeAcks.put(ack.getMsgClock(), 1);
+            }
+            else{
+                freeAcks.put(ack.getMsgClock(), freeAcks.get(ack.getMsgClock())+1);
+            }
+        }
+    }
+
+    public static synchronized void trecho2(Message rcvMsg){
+        clock = Math.max(rcvMsg.getClock(), clock) + 1;
+        int i=0;
+        while(i<msgList.size() && msgList.get(i).getGlobalClock()<rcvMsg.getGlobalClock()) i++;
+        msgList.add(i, rcvMsg);
+        if(!freeAcks.isEmpty() && freeAcks.containsKey(rcvMsg.getGlobalClock())){
+            rcvMsg.setQuantAcks(freeAcks.get(rcvMsg.getGlobalClock()));
+            freeAcks.remove(rcvMsg.getGlobalClock());
+        }
+    }
+
+	public static void checkQueue(){
 		Message m;
 		while(msgList.size()>0 && msgList.peekFirst().getQuantAcks()==0){
 			m = msgList.remove();
 			System.out.println("A mensagem \""+m.getData()+"\", com tempo "+m.getGlobalClock()+", recebeu "+quant+" ACKs");
+            //StringBuilder sndMessage = new StringBuilder();
+            //sndMessage.append(Integer.toString(pid)+'\n'+m.getData());
+            /*try{
+                Socket clientSocket = new Socket("192.168.0.13", 5000);
+                DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+                outToServer.writeBytes(sndMessage.toString());
+                clientSocket.close();
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }*/
 		}
 	}
 }
