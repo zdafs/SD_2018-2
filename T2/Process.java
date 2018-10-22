@@ -16,11 +16,12 @@ class Process implements Runnable{
 
 	static private final int Rqst = 0;
 	static private final int ansAck = 1;
-	static private final int ansNack = 2;
+	static private final int ansAckGo = 2;
+	static private final int ansNack = 3;
 
-	static private final int working =3;	//utilizando o recurso
-	static private final int waiting = 4;	//querendo utilizar o recurso
-	static private final int standing = 5;	//não precisa do recuros
+	static private final int working =4;	//utilizando o recurso
+	static private final int waiting = 5;	//querendo utilizar o recurso
+	static private final int standing = 6;	//não precisa do recuros
 
 	static private int basePort;
 	private Socket connectionSocket;
@@ -113,14 +114,14 @@ class Process implements Runnable{
 					sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
 					rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
 				}
-        else{
-          if(rscMan[rcvMsg.getResource()].getClock()<rcvMsg.getGlobalClock()){
-            sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
-            rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
-          }
-          else //Vai ter q adicionar alguma coisa
-            sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
-        }
+        	else{
+	          if(rscMan[rcvMsg.getResource()].getClock()<rcvMsg.getGlobalClock()){
+	            sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+	            rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
+	          }
+	          else //Vai ter q adicionar alguma coisa
+	            sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+        	}
 				Socket clientSocket;
 				clientSocket = new Socket("200.9.84.161", basePort+rcvMsg.getSenderPid());
 				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
