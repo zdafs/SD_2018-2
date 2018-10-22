@@ -106,15 +106,23 @@ class Process implements Runnable{
 				Message rcvMsg = new Message(inFromClient);
 				newMsg(rcvMsg);
 				StringBuilder sndMessage = new StringBuilder();
-				if(rscMan.getState() == standing){
+				if(rscMan[rcvMsg.getResource()].getState() == standing){
 					sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
 				}
-				else if(rscMan.getState() == working){
+				else if(rscMan[rcvMsg.getResource()].getState() == working){
 					sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
 					rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
 				}
+        else{
+          if(rscMan[rcvMsg.getResource()].getClock()<rcvMsg.getGlobalClock()){
+            sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+            rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
+          }
+          else //Vai ter q adicionar alguma coisa
+            sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+        }
 				Socket clientSocket;
-				clientSocket = new Socket("200.9.84.161", basePort+i);
+				clientSocket = new Socket("200.9.84.161", basePort+rcvMsg.getSenderPid());
 				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 				outToServer.writeBytes(sndMessage.toString());
 				clientSocket.close();
