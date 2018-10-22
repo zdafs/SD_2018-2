@@ -106,16 +106,19 @@ class Process implements Runnable{
 				Message rcvMsg = new Message(inFromClient);
 				newMsg(rcvMsg);
 				StringBuilder sndMessage = new StringBuilder();
-				sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
-                Socket clientSocket;
-				for(int i=0; i<quant; i++){
-					clientSocket = new Socket("200.9.84.161", basePort+i);
-					DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-					outToServer.writeBytes(sndMessage.toString());
-					clientSocket.close();
+				if(rscMan.getState() == standing){
+					sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
 				}
+				else if(rscMan.getState() == working){
+					sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+					rscMan.add(rcvMsg.getSenderPid());
+				}
+				Socket clientSocket;
+				clientSocket = new Socket("200.9.84.161", basePort+i);
+				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+				outToServer.writeBytes(sndMessage.toString());
+				clientSocket.close();
 			}
-
 		}
 		catch(Exception e){
 			e.printStackTrace();
