@@ -35,7 +35,7 @@ class Process implements Runnable{
 		rscMan = new ResourceManager[quantRsc];
 		basePort = 7000;
 
-		for(int i = 0; ++i<quantRsc;rscMan[i](quant));
+		for(int i = 0; ++i<quantRsc;rscMan[i](0, quant));
 
 		new Thread(enviaMensagem).start();
 		new Thread(recebeMensagem).start();
@@ -85,7 +85,7 @@ class Process implements Runnable{
 			}
 		}
 	};
-	
+
 	public void run(){
 		try{
 			BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
@@ -95,10 +95,11 @@ class Process implements Runnable{
 				newAck(ack);
 			}
 			else if((inFromClient.readLine().equals(ansNack))){
-
+        Ack ack = new Ack(inFromClient, true);
+        newAck(ack);
 			}
 			else{
-				Message rcvMsg = new Message(inFromClient, quant);
+				Message rcvMsg = new Message(inFromClient);
 				newMsg(rcvMsg);
 				StringBuilder sndMessage = new StringBuilder();
 				sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
@@ -123,10 +124,14 @@ class Process implements Runnable{
         clock = Math.max(ack.getAckClock(), clock) + 1;
         int i=0;
 
-        if(rscMan[ack.getRscID()].RscAns(true) == 0){
-        	rscMan[ack.getRscID()].startWork();
-        	//Começa a utilizar o recurso
+        if(ack.getIsNack){
+          if(rscMan[ack.getRscID()].RcvAns(true) == 0){
+            rscMan[ack.getRscID()].startWork();
+            //Começa a utilizar o recurso
+          }
         }
+        else
+          rscMan[ack.getRscID()].RcvAns(false);
     }
 
     public static synchronized void newMsg(Message rcvMsg){
