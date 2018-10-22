@@ -18,6 +18,10 @@ class Process implements Runnable{
 	static private final int ansAck = 1;
 	static private final int ansNack = 2;
 
+	static private final int working =3;	//utilizando o recurso
+	static private final int waiting = 4;	//querendo utilizar o recurso
+	static private final int standing = 5;	//não precisa do recuros
+
 	static private int basePort;
 	private Socket connectionSocket;
 

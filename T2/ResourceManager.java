@@ -3,15 +3,15 @@ import java.util.*;
 
 class ResourceManager{
 	static private int state;
-	static private final int working = 0;	//utilizando o recurso
-	static private final int waiting = 1;	//querendo utilizar o recurso
-	static private final int standing = 2;	//não precisa do recuros
+	static private final int working =3;	//utilizando o recurso
+	static private final int waiting = 4;	//querendo utilizar o recurso
+	static private final int standing = 5;	//não precisa do recuros
 
 	private int clock;
 	private int quantAck;
 	private int quantNack;
 	private int quant;
-  private LinkedList<Integer> sndList;
+  	private LinkedList<Integer> sndList;
 
 	public ResourceManager(int clock, int quant) {
 		state = standing;
@@ -22,8 +22,12 @@ class ResourceManager{
     sndList = new LinkedList<Integer>();
 	}
 
-	public int state(){
+	public int getState(){
 		return state;
+	}
+
+	public void setState(int state){
+		this.state = state;
 	}
 
 	public int RcvAns(boolean isAck){
