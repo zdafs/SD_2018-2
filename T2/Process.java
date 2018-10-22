@@ -111,7 +111,7 @@ class Process implements Runnable{
 				}
 				else if(rscMan.getState() == working){
 					sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
-					rscMan.add(rcvMsg.getSenderPid());
+					rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
 				}
 				Socket clientSocket;
 				clientSocket = new Socket("200.9.84.161", basePort+i);
