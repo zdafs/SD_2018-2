@@ -99,8 +99,8 @@ class Process implements Runnable{
 				newAck(ack);
 			}
 			else if((inFromClient.readLine().equals(ansNack))){
-        Ack ack = new Ack(inFromClient, true);
-        newAck(ack);
+		        Ack ack = new Ack(inFromClient, true);
+		        newAck(ack);
 			}
 			else{
 				Message rcvMsg = new Message(inFromClient);
@@ -114,7 +114,6 @@ class Process implements Runnable{
 					outToServer.writeBytes(sndMessage.toString());
 					clientSocket.close();
 				}
-			//	}
 			}
 
 		}
@@ -122,8 +121,7 @@ class Process implements Runnable{
 			e.printStackTrace();
 		}
 	}
-//newAck
-//newMsg
+
     public static synchronized void newAck(Ack ack){
         clock = Math.max(ack.getAckClock(), clock) + 1;
         int i=0;
