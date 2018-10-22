@@ -30,6 +30,14 @@ class ResourceManager{
 		this.state = state;
 	}
 
+  public void setClock(int clock){
+    this.clock = clock;
+  }
+
+  public void getClock(int clock){
+    return clock;
+  }
+
 	public int RcvAns(boolean isAck){
 			if(isAck)
 				quantAck--;
