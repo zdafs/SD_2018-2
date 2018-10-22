@@ -3,23 +3,26 @@ import java.io.*;
 class Ack {
 	private String clockMsg;
 	private String rscID;
-	static private boolean isNack;
+	private int ackType;
+  private int senderPid = -1;
 
-	public Ack(BufferedReader inFromClient, boolean isNack) throws Exception{
+	public Ack(BufferedReader inFromClient, int ackType) throws Exception{
 		clockAck = inFromClient.readLine();
+    if(ackType==2)
+      senderPid = inFromClient.readLine();
 		rscID = inFromClient.readLine();
-		this.isNack = isNack;
+		this.ackType = ackType;
 	}
 
 	public int getRscID(){
-		return Integer.parseInt(clockMsg);
+		return Integer.parseInt(rscID);
 	}
-	
+
 	public int getAckClock(){
 		return Integer.parseInt(clockAck);
 	}
 
-	public boolean getIsNack(){
-		return isNack;
+	public int getAckType(){
+		return ackType;
 	}
 }

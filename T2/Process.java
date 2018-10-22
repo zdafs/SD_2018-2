@@ -96,13 +96,17 @@ class Process implements Runnable{
 			BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
 			if(inFromClient.readLine().equals(ansAck)){
-				Ack ack = new Ack(inFromClient, false);
+				Ack ack = new Ack(inFromClient, ansAck);
 				newAck(ack);
 			}
 			else if((inFromClient.readLine().equals(ansNack))){
-		        Ack ack = new Ack(inFromClient, true);
+		        Ack ack = new Ack(inFromClient, ansNack);
 		        newAck(ack);
 			}
+      else if((inFromClient.readLine().equals(ansAckGo))){
+            Ack ack = new Ack(inFromClient, ansAckGo);
+            newAck(ack);
+      }
 			else{
 				Message rcvMsg = new Message(inFromClient);
 				newMsg(rcvMsg);
@@ -120,7 +124,7 @@ class Process implements Runnable{
 	            rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
 	          }
 	          else //Vai ter q adicionar alguma coisa
-	            sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+	            sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(pid)+Integer.toString(rcvMsg.getResource()));
         	}
 				Socket clientSocket;
 				clientSocket = new Socket("200.9.84.161", basePort+rcvMsg.getSenderPid());
@@ -138,11 +142,18 @@ class Process implements Runnable{
         clock = Math.max(ack.getAckClock(), clock) + 1;
         int i=0;
 
-        if(ack.getIsNack){
+        if(ack.getAckType()==ansAck){
           if(rscMan[ack.getRscID()].RcvAns(true) == 0){
             rscMan[ack.getRscID()].startWork();
             //Começa a utilizar o recurso
           }
+        }
+        else if(ack.getAckType()==ansAckGo){
+          if(rscMan[ack.getRscID()].RcvAns(true) == 0){
+            rscMan[ack.getRscID()].startWork();
+            //Começa a utilizar o recurso
+          }
+          rscMan[ack.getRscID()].add(ack.getSenderPid());
         }
         else
           rscMan[ack.getRscID()].RcvAns(false);
