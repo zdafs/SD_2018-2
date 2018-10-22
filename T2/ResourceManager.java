@@ -1,3 +1,5 @@
+import java.util.*;
+
 
 class ResourceManager{
 	static private int state;
@@ -9,6 +11,7 @@ class ResourceManager{
 	private int quantAck;
 	private int quantNack;
 	private int quant;
+  private LinkedList<Integer> sndList;
 
 	public ResourceManager(int clock, int quant) {
 		state = standing;
@@ -16,8 +19,9 @@ class ResourceManager{
 		quantAck = quant;
 		quantNack = 0;
 		this.quant = quant;
+    sndList = new LinkedList<Integer>();
 	}
-	
+
 	public int state(){
 		return state;
 	}
@@ -34,8 +38,21 @@ class ResourceManager{
 			return quantAck;
     }
 
-    public int Nack(){
-    	return quantNack;
-    }
+  public int Nack(){
+  	return quantNack;
+  }
+
+  public void add(int pid){
+    sndList.add(pid);
+  }
+
+  public int pop(){
+    int pid = sndList.remove();
+    return pid;
+  }
+
+  public int size(){
+    return sndList.size();
+  }
 }
-	
+
