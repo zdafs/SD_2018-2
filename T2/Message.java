@@ -6,7 +6,9 @@ class Message {
 
 	public Message(BufferedReader inFromClient) throws Exception{
 		clock = inFromClient.readLine();
+        System.out.println(clock);
 		resource = inFromClient.readLine();
+        System.out.println(resource);
 	}
 
 	public int getGlobalClock(){

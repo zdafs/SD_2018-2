@@ -41,7 +41,7 @@ class Process implements Runnable{
 		rscMan = new ResourceManager[quantRsc];
 		basePort = 7000;
 
-		for(int i = 0; ++i<quantRsc;) rscMan[i] = new ResourceManager(quant);
+		for(int i = 0; i<quantRsc; i++) rscMan[i] = new ResourceManager(quant);
 
 		new Thread(enviaMensagem).start();
 		new Thread(recebeMensagem).start();
@@ -54,19 +54,45 @@ class Process implements Runnable{
 				while(true){
 					StringBuilder message = new StringBuilder();
 					String data = reader.readLine();
-					message.append(Integer.toString(Rqst)+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data+'\n');
+                    if(data.equals("M")){
+                        for(int i=0; i<quantRsc; i++){
+                            System.out.print(rscMan[i].getState()+" ");
+                        }
+                        System.out.println("");
+                    }
+                    else if(data.equals("L")){
+                        data = reader.readLine();
+                        rscMan[Integer.parseInt(data)].setState(standing);
+                        StringBuilder sndMessage = new StringBuilder();
+                        Socket clientSocket;
+                        while(rscMan[Integer.parseInt(data)].size()>0){
+                            int sndPid = rscMan[Integer.parseInt(data)].pop();
+                            sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+data);
+                            clientSocket = new Socket("200.9.84.97", basePort+sndPid);
+                            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+                            outToServer.writeBytes(sndMessage.toString());
+                            clientSocket.close();
+                        }
 
-					rscMan[Integer.parseInt(data)].setClock(Integer.parseInt(Integer.toString(clock)+Integer.toString(pid)));
+                    }
 
-          rscMan[Integer.parseInt(data)].setState(waiting);
+                    else{
+                        message.append(Integer.toString(Rqst)+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data);
 
-          Socket clientSocket;
-					for(int i=0; i<quant; i++){
-            clientSocket = new Socket("200.9.84.161", basePort+i);
-						DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-						outToServer.writeBytes(message.toString());
-						clientSocket.close();
-					}
+                        System.out.println(message.toString());
+
+                        rscMan[Integer.parseInt(data)].setClock(Integer.parseInt(Integer.toString(clock)+Integer.toString(pid)));
+
+                        rscMan[Integer.parseInt(data)].setState(waiting);
+
+                        Socket clientSocket;
+                        for(int i=0; i<quant; i++){
+                            clientSocket = new Socket("200.9.84.97", basePort+i);
+                            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+                            outToServer.writeBytes(message.toString());
+                            clientSocket.close();
+                        }
+                    }
 				}
 			}
 			catch(Exception e){
@@ -98,24 +124,26 @@ class Process implements Runnable{
 		try{
 			BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
-			if(inFromClient.readLine().equals(ansAck)){
+            String type = inFromClient.readLine();
+
+			if(type.equals(Integer.toString(ansAck))){
 				Ack ack = new Ack(inFromClient, ansAck);
 				newAck(ack);
 			}
-			else if((inFromClient.readLine().equals(ansNack))){
+			else if((type.equals(Integer.toString(ansNack)))){
 		        Ack ack = new Ack(inFromClient, ansNack);
 		        newAck(ack);
 			}
-      else if((inFromClient.readLine().equals(ansAckGo))){
-            Ack ack = new Ack(inFromClient, ansAckGo);
-            newAck(ack);
-      }
+              else if((type.equals(Integer.toString(ansAckGo)))){
+                    Ack ack = new Ack(inFromClient, ansAckGo);
+                    newAck(ack);
+              }
 			else{
 				Message rcvMsg = new Message(inFromClient);
 				StringBuilder sndMessage = newMsg(rcvMsg);
 
 				Socket clientSocket;
-				clientSocket = new Socket("200.9.84.161", basePort+rcvMsg.getSenderPid());
+				clientSocket = new Socket("200.9.84.97", basePort+rcvMsg.getSenderPid());
 				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 				outToServer.writeBytes(sndMessage.toString());
 				clientSocket.close();
@@ -146,9 +174,12 @@ class Process implements Runnable{
 
     public static synchronized StringBuilder newMsg(Message rcvMsg){
         clock = Math.max(rcvMsg.getClock(), clock) + 1;
+        System.out.println("Oi");
         StringBuilder sndMessage = new StringBuilder();
-
-        if(rscMan[rcvMsg.getResource()].getState() == standing){
+        if(rcvMsg.getSenderPid() ==  pid){
+            sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+        }
+        else if(rscMan[rcvMsg.getResource()].getState() == standing){
           sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
         }
         else if(rscMan[rcvMsg.getResource()].getState() == working){
@@ -161,7 +192,7 @@ class Process implements Runnable{
             rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
           }
           else
-            sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(pid)+Integer.toString(rcvMsg.getResource()));
+            sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(pid)+'\n'+Integer.toString(rcvMsg.getResource()));
         }
         return sndMessage;
     }
