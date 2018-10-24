@@ -1,10 +1,10 @@
 import java.io.*;
 
 class Ack {
-	private String clockMsg;
+	private String clockAck;
 	private String rscID;
 	private int ackType;
-  private int senderPid = -1;
+  private String senderPid = null;
 
 	public Ack(BufferedReader inFromClient, int ackType) throws Exception{
 		clockAck = inFromClient.readLine();
@@ -25,4 +25,8 @@ class Ack {
 	public int getAckType(){
 		return ackType;
 	}
+
+  public int getSenderPid(){
+    return Integer.parseInt(senderPid);
+  }
 }

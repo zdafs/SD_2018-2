@@ -13,9 +13,9 @@ class ResourceManager{
 	private int quant;
   	private LinkedList<Integer> sndList;
 
-	public ResourceManager(int clock, int quant) {
+	public ResourceManager(int quant) {
 		state = standing;
-		this.clock = clock;
+		this.clock = 0;
 		quantAck = quant;
 		quantNack = 0;
 		this.quant = quant;
@@ -34,7 +34,7 @@ class ResourceManager{
     this.clock = clock;
   }
 
-  public void getClock(int clock){
+  public int getClock(){
     return clock;
   }
 

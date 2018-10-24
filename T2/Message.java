@@ -21,7 +21,7 @@ class Message {
 		return Integer.parseInt(resource);
 	}
 
-  public char getSenderPid(){
+  public int getSenderPid(){
     return Integer.parseInt(clock.substring(clock.length()-1, clock.length()));
   }
 }

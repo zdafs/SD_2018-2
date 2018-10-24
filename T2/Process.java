@@ -12,7 +12,8 @@ class Process implements Runnable{
 	static private int clock;
 	static private int pid;
 	static private int quant;
-	private ResourceManager rscMan[];
+  static private int quantRsc;
+	static private ResourceManager rscMan[];
 
 	static private final int Rqst = 0;
 	static private final int ansAck = 1;
@@ -40,7 +41,7 @@ class Process implements Runnable{
 		rscMan = new ResourceManager[quantRsc];
 		basePort = 7000;
 
-		for(int i = 0; ++i<quantRsc;rscMan[i](0, quant));
+		for(int i = 0; ++i<quantRsc;) rscMan[i] = new ResourceManager(quant);
 
 		new Thread(enviaMensagem).start();
 		new Thread(recebeMensagem).start();
@@ -55,11 +56,13 @@ class Process implements Runnable{
 					String data = reader.readLine();
 					message.append(Integer.toString(Rqst)+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data+'\n');
 
-					rscMan[Integer.parseInt(data)].setClock(Integer.toString(clock)+Integer.toString(pid));
+					rscMan[Integer.parseInt(data)].setClock(Integer.parseInt(Integer.toString(clock)+Integer.toString(pid)));
 
-                    Socket clientSocket;
+          rscMan[Integer.parseInt(data)].setState(waiting);
+
+          Socket clientSocket;
 					for(int i=0; i<quant; i++){
-                        clientSocket = new Socket("200.9.84.161", basePort+i);
+            clientSocket = new Socket("200.9.84.161", basePort+i);
 						DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 						outToServer.writeBytes(message.toString());
 						clientSocket.close();
@@ -109,23 +112,8 @@ class Process implements Runnable{
       }
 			else{
 				Message rcvMsg = new Message(inFromClient);
-				newMsg(rcvMsg);
-				StringBuilder sndMessage = new StringBuilder();
-				if(rscMan[rcvMsg.getResource()].getState() == standing){
-					sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
-				}
-				else if(rscMan[rcvMsg.getResource()].getState() == working){
-					sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
-					rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
-				}
-        	else{
-	          if(rscMan[rcvMsg.getResource()].getClock()<rcvMsg.getGlobalClock()){
-	            sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
-	            rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
-	          }
-	          else //Vai ter q adicionar alguma coisa
-	            sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(pid)+Integer.toString(rcvMsg.getResource()));
-        	}
+				StringBuilder sndMessage = newMsg(rcvMsg);
+
 				Socket clientSocket;
 				clientSocket = new Socket("200.9.84.161", basePort+rcvMsg.getSenderPid());
 				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
@@ -140,18 +128,15 @@ class Process implements Runnable{
 
     public static synchronized void newAck(Ack ack){
         clock = Math.max(ack.getAckClock(), clock) + 1;
-        int i=0;
 
         if(ack.getAckType()==ansAck){
           if(rscMan[ack.getRscID()].RcvAns(true) == 0){
-            rscMan[ack.getRscID()].startWork();
-            //Começa a utilizar o recurso
+            rscMan[ack.getRscID()].setState(working);
           }
         }
         else if(ack.getAckType()==ansAckGo){
           if(rscMan[ack.getRscID()].RcvAns(true) == 0){
-            rscMan[ack.getRscID()].startWork();
-            //Começa a utilizar o recurso
+            rscMan[ack.getRscID()].setState(working);
           }
           rscMan[ack.getRscID()].add(ack.getSenderPid());
         }
@@ -159,33 +144,25 @@ class Process implements Runnable{
           rscMan[ack.getRscID()].RcvAns(false);
     }
 
-    public static synchronized void newMsg(Message rcvMsg){
+    public static synchronized StringBuilder newMsg(Message rcvMsg){
         clock = Math.max(rcvMsg.getClock(), clock) + 1;
-        int i=0;
-        while(i<msgList.size() && msgList.get(i).getGlobalClock()<rcvMsg.getGlobalClock()) i++;
-        msgList.add(i, rcvMsg);
-        if(!freeAcks.isEmpty() && freeAcks.containsKey(rcvMsg.getGlobalClock())){
-            rcvMsg.setQuantAcks(freeAcks.get(rcvMsg.getGlobalClock()));
-            freeAcks.remove(rcvMsg.getGlobalClock());
-        }
-    }
+        StringBuilder sndMessage = new StringBuilder();
 
-	public static void checkQueue(){
-		Message m;
-		while(msgList.size()>0 && msgList.peekFirst().getQuantAcks()==0){
-			m = msgList.remove();
-			System.out.println("A mensagem \""+m.getData()+"\", com tempo "+m.getGlobalClock()+", recebeu "+quant+" ACKs");
-            StringBuilder sndMessage = new StringBuilder();
-            sndMessage.append(Integer.toString(pid)+'\n'+m.getData());
-            try{
-                Socket clientSocket = new Socket("200.9.84.161", 5000);
-                DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-                outToServer.writeBytes(sndMessage.toString());
-                clientSocket.close();
-            }
-            catch(Exception e){
-                e.printStackTrace();
-            }
-		}
-	}
+        if(rscMan[rcvMsg.getResource()].getState() == standing){
+          sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+        }
+        else if(rscMan[rcvMsg.getResource()].getState() == working){
+          sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+          rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
+        }
+        else{
+          if(rscMan[rcvMsg.getResource()].getClock()<rcvMsg.getGlobalClock()){
+            sndMessage.append(Integer.toString(ansNack)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
+            rscMan[rcvMsg.getResource()].add(rcvMsg.getSenderPid());
+          }
+          else
+            sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(pid)+Integer.toString(rcvMsg.getResource()));
+        }
+        return sndMessage;
+    }
 }
