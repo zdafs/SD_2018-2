@@ -8,8 +8,8 @@ class Ack {
 
 	public Ack(BufferedReader inFromClient, int ackType) throws Exception{
 		clockAck = inFromClient.readLine();
-    if(ackType==2)
-      senderPid = inFromClient.readLine();
+        if(ackType==2)
+            senderPid = inFromClient.readLine();
 		rscID = inFromClient.readLine();
 		this.ackType = ackType;
 	}

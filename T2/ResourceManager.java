@@ -2,7 +2,7 @@ import java.util.*;
 
 
 class ResourceManager{
-	static private int state;
+	private int state;
 	static private final int working =4;	//utilizando o recurso
 	static private final int waiting = 5;	//querendo utilizar o recurso
 	static private final int standing = 6;	//não precisa do recuros
@@ -28,6 +28,11 @@ class ResourceManager{
 
 	public void setState(int state){
 		this.state = state;
+        if(state==standing){
+            quantAck = quant;
+            quantNack = 0;
+            clock = 0;
+        }
 	}
 
   public void setClock(int clock){

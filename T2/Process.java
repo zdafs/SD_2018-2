@@ -64,10 +64,10 @@ class Process implements Runnable{
                         data = reader.readLine();
                         rscMan[Integer.parseInt(data)].setState(standing);
                         StringBuilder sndMessage = new StringBuilder();
+                        sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+data);
                         Socket clientSocket;
                         while(rscMan[Integer.parseInt(data)].size()>0){
                             int sndPid = rscMan[Integer.parseInt(data)].pop();
-                            sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+data);
                             clientSocket = new Socket("200.9.84.97", basePort+sndPid);
                             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
                             outToServer.writeBytes(sndMessage.toString());
@@ -78,8 +78,6 @@ class Process implements Runnable{
 
                     else{
                         message.append(Integer.toString(Rqst)+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data);
-
-                        System.out.println(message.toString());
 
                         rscMan[Integer.parseInt(data)].setClock(Integer.parseInt(Integer.toString(clock)+Integer.toString(pid)));
 
@@ -174,7 +172,6 @@ class Process implements Runnable{
 
     public static synchronized StringBuilder newMsg(Message rcvMsg){
         clock = Math.max(rcvMsg.getClock(), clock) + 1;
-        System.out.println("Oi");
         StringBuilder sndMessage = new StringBuilder();
         if(rcvMsg.getSenderPid() ==  pid){
             sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getResource()));
