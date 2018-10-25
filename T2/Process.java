@@ -59,7 +59,7 @@ class Process implements Runnable{
                         	if(rscMan[i].getState() == standing)
                             	System.out.print("R"+i+" - standing\n");
                             else if(rscMan[i].getState() == waiting)
-                            	System.out.print("R"+i+" - waiting\n");                      
+                            	System.out.print("R"+i+" - waiting\n");
                             else
                             	System.out.print("R"+i+" - working\n");
                         }
@@ -74,18 +74,18 @@ class Process implements Runnable{
 	                        Socket clientSocket;
 	                        while(rscMan[Integer.parseInt(data)].size()>0){
 	                            int sndPid = rscMan[Integer.parseInt(data)].pop();
-	                            clientSocket = new Socket("200.9.84.97", basePort+sndPid);
+	                            clientSocket = new Socket("200.18.101.75", basePort+sndPid);
 	                            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 	                            outToServer.writeBytes(sndMessage.toString());
 	                            clientSocket.close();
 	                        }
-	                        System.out.print("R"+data+" - Liberado!\n");	
+	                        System.out.print("R"+data+" - Liberado!\n");
                         }
                         else
-                        	System.out.print("R"+data+" não está em uso por este processo!\n");	
+                        	System.out.print("R"+data+" não está em uso por este processo!\n");
                     }
 
-                    else if(Integer.parseInt(data) > 0 && Integer.parseInt(data) <= quantRsc){
+                    else if(Integer.parseInt(data) >= 0 && Integer.parseInt(data) < quantRsc){
                         message.append(Integer.toString(Rqst)+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data);
 
                         rscMan[Integer.parseInt(data)].setClock(Integer.parseInt(Integer.toString(clock)+Integer.toString(pid)));
@@ -94,7 +94,7 @@ class Process implements Runnable{
 
                         Socket clientSocket;
                         for(int i=0; i<quant; i++){
-                            clientSocket = new Socket("200.9.84.97", basePort+i);
+                            clientSocket = new Socket("200.18.101.75", basePort+i);
                             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
                             outToServer.writeBytes(message.toString());
                             clientSocket.close();
@@ -152,7 +152,7 @@ class Process implements Runnable{
 				StringBuilder sndMessage = newMsg(rcvMsg);
 
 				Socket clientSocket;
-				clientSocket = new Socket("200.9.84.97", basePort+rcvMsg.getSenderPid());
+				clientSocket = new Socket("200.18.101.75", basePort+rcvMsg.getSenderPid());
 				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 				outToServer.writeBytes(sndMessage.toString());
 				clientSocket.close();
