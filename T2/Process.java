@@ -56,27 +56,36 @@ class Process implements Runnable{
 					String data = reader.readLine();
                     if(data.equals("M")){
                         for(int i=0; i<quantRsc; i++){
-                            System.out.print(rscMan[i].getState()+" ");
+                        	if(rscMan[i].getState() == standing)
+                            	System.out.print("R"+i+" - standing\n");
+                            else if(rscMan[i].getState() == waiting)
+                            	System.out.print("R"+i+" - waiting\n");                      
+                            else
+                            	System.out.print("R"+i+" - working\n");
                         }
                         System.out.println("");
                     }
                     else if(data.equals("L")){
                         data = reader.readLine();
-                        rscMan[Integer.parseInt(data)].setState(standing);
-                        StringBuilder sndMessage = new StringBuilder();
-                        sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+data);
-                        Socket clientSocket;
-                        while(rscMan[Integer.parseInt(data)].size()>0){
-                            int sndPid = rscMan[Integer.parseInt(data)].pop();
-                            clientSocket = new Socket("200.9.84.97", basePort+sndPid);
-                            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-                            outToServer.writeBytes(sndMessage.toString());
-                            clientSocket.close();
+                        if(rscMan[Integer.parseInt(data)].getState() == working){
+	                        rscMan[Integer.parseInt(data)].setState(standing);
+	                        StringBuilder sndMessage = new StringBuilder();
+	                        sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+data);
+	                        Socket clientSocket;
+	                        while(rscMan[Integer.parseInt(data)].size()>0){
+	                            int sndPid = rscMan[Integer.parseInt(data)].pop();
+	                            clientSocket = new Socket("200.9.84.97", basePort+sndPid);
+	                            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+	                            outToServer.writeBytes(sndMessage.toString());
+	                            clientSocket.close();
+	                        }
+	                        System.out.print("R"+data+" - Liberado!\n");	
                         }
-
+                        else
+                        	System.out.print("R"+data+" não está em uso por este processo!\n");	
                     }
 
-                    else{
+                    else if(Integer.parseInt(data) > 0 && Integer.parseInt(data) <= quantRsc){
                         message.append(Integer.toString(Rqst)+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data);
 
                         rscMan[Integer.parseInt(data)].setClock(Integer.parseInt(Integer.toString(clock)+Integer.toString(pid)));
@@ -91,6 +100,8 @@ class Process implements Runnable{
                             clientSocket.close();
                         }
                     }
+                    else
+                    	System.out.print("Comando inválido!\n");
 				}
 			}
 			catch(Exception e){
