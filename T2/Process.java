@@ -68,13 +68,19 @@ class Process implements Runnable{
                     else if(data.equals("L")){
                         data = reader.readLine();
                         if(rscMan[Integer.parseInt(data)].getState() == working){
+                            try{
+                                rscMan[Integer.parseInt(data)].sndMsgResource("192.168.0.10", Integer.parseInt(data), Integer.toString(pid), "0");
+                            }
+                            catch(Exception e){
+                                e.printStackTrace();
+                            }
 	                        rscMan[Integer.parseInt(data)].setState(standing);
 	                        StringBuilder sndMessage = new StringBuilder();
 	                        sndMessage.append(Integer.toString(ansAck)+'\n'+Integer.toString(clock)+'\n'+data);
 	                        Socket clientSocket;
 	                        while(rscMan[Integer.parseInt(data)].size()>0){
 	                            int sndPid = rscMan[Integer.parseInt(data)].pop();
-	                            clientSocket = new Socket("200.18.101.75", basePort+sndPid);
+	                            clientSocket = new Socket("192.168.0.10", basePort+sndPid);
 	                            DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 	                            outToServer.writeBytes(sndMessage.toString());
 	                            clientSocket.close();
@@ -94,7 +100,7 @@ class Process implements Runnable{
 
                         Socket clientSocket;
                         for(int i=0; i<quant; i++){
-                            clientSocket = new Socket("200.18.101.75", basePort+i);
+                            clientSocket = new Socket("192.168.0.10", basePort+i);
                             DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
                             outToServer.writeBytes(message.toString());
                             clientSocket.close();
@@ -152,7 +158,7 @@ class Process implements Runnable{
 				StringBuilder sndMessage = newMsg(rcvMsg);
 
 				Socket clientSocket;
-				clientSocket = new Socket("200.18.101.75", basePort+rcvMsg.getSenderPid());
+				clientSocket = new Socket("192.168.0.10", basePort+rcvMsg.getSenderPid());
 				DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 				outToServer.writeBytes(sndMessage.toString());
 				clientSocket.close();
@@ -165,20 +171,32 @@ class Process implements Runnable{
 
     public static synchronized void newAck(Ack ack){
         clock = Math.max(ack.getAckClock(), clock) + 1;
+        boolean connect = false;
 
         if(ack.getAckType()==ansAck){
           if(rscMan[ack.getRscID()].RcvAns(true) == 0){
             rscMan[ack.getRscID()].setState(working);
+            connect = true;
           }
         }
         else if(ack.getAckType()==ansAckGo){
           if(rscMan[ack.getRscID()].RcvAns(true) == 0){
             rscMan[ack.getRscID()].setState(working);
+            connect = true;
           }
           rscMan[ack.getRscID()].add(ack.getSenderPid());
         }
         else
           rscMan[ack.getRscID()].RcvAns(false);
+
+        if(connect){
+            try{
+                rscMan[ack.getRscID()].sndMsgResource("192.168.0.10", ack.getRscID(), Integer.toString(pid), "1");
+            }
+            catch(Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
     public static synchronized StringBuilder newMsg(Message rcvMsg){

@@ -1,4 +1,6 @@
 import java.util.*;
+import java.net.*;
+import java.io.*;
 
 
 class ResourceManager{
@@ -19,7 +21,7 @@ class ResourceManager{
 		quantAck = quant;
 		quantNack = 0;
 		this.quant = quant;
-    sndList = new LinkedList<Integer>();
+        sndList = new LinkedList<Integer>();
 	}
 
 	public int getState(){
@@ -70,6 +72,13 @@ class ResourceManager{
 
   public int size(){
     return sndList.size();
+  }
+
+  public void sndMsgResource(String ip, int rscId, String pid, String starting) throws Exception{
+    Socket clientSocket = new Socket(ip, 5000+rscId);
+    DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+    outToServer.writeBytes(starting+'\n'+pid);
+    clientSocket.close();
   }
 }
 
