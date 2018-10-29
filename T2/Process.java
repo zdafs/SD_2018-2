@@ -91,7 +91,7 @@ class Process implements Runnable{
                         	System.out.print("R"+data+" não está em uso por este processo!\n");
                     }
 
-                    else if(Integer.parseInt(data) >= 0 && Integer.parseInt(data) < quantRsc){
+                    else if(isNumeric(data) && Integer.parseInt(data) >= 0 && Integer.parseInt(data) < quantRsc){
                         message.append(Integer.toString(Rqst)+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data);
 
                         rscMan[Integer.parseInt(data)].setClock(Integer.parseInt(Integer.toString(clock)+Integer.toString(pid)));
@@ -223,5 +223,15 @@ class Process implements Runnable{
             sndMessage.append(Integer.toString(ansAckGo)+'\n'+Integer.toString(clock)+'\n'+Integer.toString(pid)+'\n'+Integer.toString(rcvMsg.getResource()));
         }
         return sndMessage;
+    }
+
+    public static boolean isNumeric(String data){
+        try{
+            Integer.parseInt(data);
+        }
+        catch(NumberFormatException | NullPointerException nfe){
+            return false;
+        }
+        return true;
     }
 }
