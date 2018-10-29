@@ -45,7 +45,7 @@ class Process implements Runnable{
 					message.append("0"+'\n'+Integer.toString(clock)+Integer.toString(pid)+'\n'+data+'\n');
                     Socket clientSocket;
 					for(int i=0; i<quant; i++){
-                        clientSocket = new Socket("200.9.84.161", basePort+i);
+                        clientSocket = new Socket("192.168.0.13", basePort+i);
 						DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 						outToServer.writeBytes(message.toString());
 						clientSocket.close();
@@ -92,7 +92,7 @@ class Process implements Runnable{
 				sndMessage.append("1"+'\n'+Integer.toString(clock)+'\n'+Integer.toString(rcvMsg.getGlobalClock()));
                 Socket clientSocket;
 				for(int i=0; i<quant; i++){
-					clientSocket = new Socket("200.9.84.161", basePort+i);
+					clientSocket = new Socket("192.168.0.13", basePort+i);
 					DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 					outToServer.writeBytes(sndMessage.toString());
 					clientSocket.close();
@@ -149,7 +149,7 @@ class Process implements Runnable{
             StringBuilder sndMessage = new StringBuilder();
             sndMessage.append(Integer.toString(pid)+'\n'+m.getData());
             try{
-                Socket clientSocket = new Socket("200.9.84.161", 5000);
+                Socket clientSocket = new Socket("192.168.0.13", 5000);
                 DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
                 outToServer.writeBytes(sndMessage.toString());
                 clientSocket.close();

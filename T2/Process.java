@@ -59,7 +59,7 @@ class Process implements Runnable{
                         	if(rscMan[i].getState() == standing)
                             	System.out.print("R"+i+" - standing\n");
                             else if(rscMan[i].getState() == waiting)
-                            	System.out.print("R"+i+" - waiting\n");
+                            	System.out.print("R"+i+" - Waiting: "+rscMan[i].Nack()+" in line\n");
                             else
                             	System.out.print("R"+i+" - working\n");
                         }
@@ -176,12 +176,14 @@ class Process implements Runnable{
         if(ack.getAckType()==ansAck){
           if(rscMan[ack.getRscID()].RcvAns(true) == 0){
             rscMan[ack.getRscID()].setState(working);
+            System.out.print("R"+ack.getRscID()+" - Working\n");
             connect = true;
           }
         }
         else if(ack.getAckType()==ansAckGo){
           if(rscMan[ack.getRscID()].RcvAns(true) == 0){
             rscMan[ack.getRscID()].setState(working);
+            System.out.print("R"+ack.getRscID()+" - Working\n");
             connect = true;
           }
           rscMan[ack.getRscID()].add(ack.getSenderPid());
